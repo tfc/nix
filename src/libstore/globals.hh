@@ -324,6 +324,11 @@ public:
     Setting<std::string> netrcFile{this, fmt("%s/%s", nixConfDir, "netrc"), "netrc-file",
         "Path to the netrc file used to obtain usernames/passwords for downloads."};
 
+    Setting<std::string> gitHttpsLoginFile{this, "",
+      "git-https-login-file",
+      "Path to a file that maps from URL prefixes to user:token credentials "
+      "that are prepended like this: https://user:token@gitlab.private/..."};
+
     /* Path to the SSL CA file used */
     Path caFile;
 

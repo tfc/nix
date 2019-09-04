@@ -7,6 +7,7 @@
 
 #include <sys/time.h>
 
+#include <fstream>
 #include <regex>
 
 #include <nlohmann/json.hpp>
@@ -24,6 +25,34 @@ struct GitInfo
 };
 
 std::regex revRegex("^[0-9a-fA-F]{40}$");
+
+static std::string patchUri(std::string uri)
+{
+  const auto path{settings.gitHttpsLoginFile.get()};
+  if (path.empty()) {
+    return uri;
+  }
+
+  std::ifstream fileContent{path};
+  if (!fileContent) {
+    return uri;
+  }
+
+  std::string prefix, tokenPart;
+  while(fileContent >> prefix >> tokenPart) {
+    if (!hasPrefix(uri, prefix)) {
+      continue;
+    }
+    const std::string protocolSep{"://"};
+    const auto sepPos{uri.find(protocolSep)};
+    if (sepPos == string::npos) {
+      // handle as error
+      continue;
+    }
+    return uri.insert(sepPos + protocolSep.length(), tokenPart + "@");
+  }
+  return uri;
+}
 
 GitInfo exportGit(ref<Store> store, const std::string & uri,
     std::optional<std::string> ref, std::string rev,
@@ -128,7 +157,7 @@ GitInfo exportGit(ref<Store> store, const std::string & uri,
 
         // FIXME: git stderr messes up our progress indicator, so
         // we're using --quiet for now. Should process its stderr.
-        runProgram("git", true, { "-C", cacheDir, "fetch", "--quiet", "--force", "--", uri, fmt("%s:%s", *ref, *ref) });
+        runProgram("git", true, { "-C", cacheDir, "fetch", "--quiet", "--force", "--", patchUri(uri), fmt("%s:%s", *ref, *ref) });
 
         struct timeval times[2];
         times[0].tv_sec = now;

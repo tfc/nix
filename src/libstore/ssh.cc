@@ -96,7 +96,7 @@ std::unique_ptr<SSHMaster::Connection> SSHMaster::startCommand(const std::string
         }
 
         args.push_back(command);
-        execvp(args.begin()->c_str(), stringsToCharPtrs(args).data());
+        execvp(args.begin()->c_str(), const_cast<char * const *>(stringsToCharPtrs(args).data()));
 
         // could not exec ssh/bash
         throw SysError("unable to execute '%s'", args.front());
@@ -160,7 +160,7 @@ Path SSHMaster::startMaster()
         if (verbosity >= lvlChatty)
             args.push_back("-v");
         addCommonSSHOpts(args);
-        execvp(args.begin()->c_str(), stringsToCharPtrs(args).data());
+        execvp(args.begin()->c_str(), const_cast<char * const *>(stringsToCharPtrs(args).data()));
 
         throw SysError("unable to execute '%s'", args.front());
     }, options);

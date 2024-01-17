@@ -46,7 +46,7 @@ struct CmdEdit : InstallableValueCommand
 
         restoreProcessContext();
 
-        execvp(args.front().c_str(), stringsToCharPtrs(args).data());
+        execvp(args.front().c_str(), const_cast<char * const *>(stringsToCharPtrs(args).data()));
 
         std::string command;
         for (const auto &arg : args) command += " '" + arg + "'";

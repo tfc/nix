@@ -57,7 +57,7 @@ HookInstance::HookInstance()
         if (dup2(builderOut.readSide.get(), 5) == -1)
             throw SysError("dupping builder's stdout/stderr");
 
-        execv(buildHook.c_str(), stringsToCharPtrs(args).data());
+        execv(buildHook.c_str(), const_cast<char * const *>(stringsToCharPtrs(args).data()));
 
         throw SysError("executing '%s'", buildHook);
     });

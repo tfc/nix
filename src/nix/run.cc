@@ -51,7 +51,7 @@ void runProgramInStore(ref<Store> store,
         Strings helperArgs = { chrootHelperName, store->storeDir, store2->getRealStoreDir(), std::string(system.value_or("")), program };
         for (auto & arg : args) helperArgs.push_back(arg);
 
-        execv(getSelfExe().value_or("nix").c_str(), stringsToCharPtrs(helperArgs).data());
+        execv(getSelfExe().value_or("nix").c_str(), const_cast<char * const *>(stringsToCharPtrs(helperArgs).data()));
 
         throw SysError("could not execute chroot helper");
     }
@@ -59,10 +59,12 @@ void runProgramInStore(ref<Store> store,
     if (system)
         setPersonality(*system);
 
+    auto argsStrings = stringsToCharPtrs(args);
+    auto * pArgs = const_cast<char * const *>(argsStrings.data());
     if (useSearchPath == UseSearchPath::Use)
-        execvp(program.c_str(), stringsToCharPtrs(args).data());
+        execvp(program.c_str(), pArgs);
     else
-        execv(program.c_str(), stringsToCharPtrs(args).data());
+        execv(program.c_str(), pArgs);
 
     throw SysError("unable to execute '%s'", program);
 }
@@ -279,7 +281,7 @@ void chrootHelper(int argc, char * * argv)
     if (system != "")
         setPersonality(system);
 
-    execvp(cmd.c_str(), stringsToCharPtrs(args).data());
+    execvp(cmd.c_str(), const_cast<char * const *>(stringsToCharPtrs(args).data()));
 
     throw SysError("unable to exec '%s'", cmd);
 

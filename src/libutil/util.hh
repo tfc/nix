@@ -21,7 +21,7 @@ void initLibUtil();
  * *`s. The result must not be accessed beyond the lifetime of the
  * list of strings.
  */
-std::vector<char *> stringsToCharPtrs(const Strings & ss);
+std::vector<const char *> stringsToCharPtrs(const Strings & ss);
 
 
 MakeError(FormatError, Error);

@@ -2149,6 +2149,11 @@ void LocalDerivationGoal::runChild()
             }
         }
 
+        auto argsStrings = stringsToCharPtrs(args);
+        auto envStrings = stringsToCharPtrs(envStrs);
+        auto argsPointers = const_cast<char * const *>(argsStrings.data());
+        auto envPointers = const_cast<char * const *>(envStrings.data());
+
 #if __APPLE__
         posix_spawnattr_t attrp;
 
@@ -2158,21 +2163,21 @@ void LocalDerivationGoal::runChild()
         if (posix_spawnattr_setflags(&attrp, POSIX_SPAWN_SETEXEC))
             throw SysError("failed to initialize builder");
 
+        cpu_type_t cpu;
         if (drv->platform == "aarch64-darwin") {
             // Unset kern.curproc_arch_affinity so we can escape Rosetta
             int affinity = 0;
             sysctlbyname("kern.curproc_arch_affinity", NULL, NULL, &affinity, sizeof(affinity));
 
-            cpu_type_t cpu = CPU_TYPE_ARM64;
-            posix_spawnattr_setbinpref_np(&attrp, 1, &cpu, NULL);
+            cpu = CPU_TYPE_ARM64;
         } else if (drv->platform == "x86_64-darwin") {
-            cpu_type_t cpu = CPU_TYPE_X86_64;
-            posix_spawnattr_setbinpref_np(&attrp, 1, &cpu, NULL);
+            cpu = CPU_TYPE_X86_64;
         }
+        posix_spawnattr_setbinpref_np(&attrp, 1, &cpu, NULL);
 
-        posix_spawn(NULL, builder.c_str(), NULL, &attrp, stringsToCharPtrs(args).data(), stringsToCharPtrs(envStrs).data());
+        posix_spawn(NULL, builder.c_str(), NULL, &attrp, argsPointers, envPointers);
 #else
-        execve(builder.c_str(), stringsToCharPtrs(args).data(), stringsToCharPtrs(envStrs).data());
+        execve(builder.c_str(), argsPointers, envPointers);
 #endif
 
         throw SysError("executing '%1%'", drv->builder);

@@ -335,12 +335,14 @@ void runProgram2(const RunOptions & options)
 
         restoreProcessContext();
 
+        auto argsStrings = stringsToCharPtrs(args_);
+        auto * pargs {const_cast<char * const *>(argsStrings.data())};
         if (options.searchPath)
-            execvp(options.program.c_str(), stringsToCharPtrs(args_).data());
+            execvp(options.program.c_str(), pargs);
             // This allows you to refer to a program with a pathname relative
             // to the PATH variable.
         else
-            execv(options.program.c_str(), stringsToCharPtrs(args_).data());
+            execv(options.program.c_str(), pargs);
 
         throw SysError("executing '%1%'", options.program);
     }, processOptions);

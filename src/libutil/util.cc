@@ -36,10 +36,11 @@ void initLibUtil() {
 
 //////////////////////////////////////////////////////////////////////
 
-std::vector<char *> stringsToCharPtrs(const Strings & ss)
+std::vector<const char *> stringsToCharPtrs(const Strings & ss)
 {
-    std::vector<char *> res;
-    for (auto & s : ss) res.push_back((char *) s.c_str());
+    std::vector<const char *> res;
+    res.reserve(ss.size() + 1);
+    for (const auto & s : ss) res.push_back(s.c_str());
     res.push_back(0);
     return res;
 }

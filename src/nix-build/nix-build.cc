@@ -599,15 +599,13 @@ static void main_nix_build(int argc, char * * argv)
 
         auto envPtrs = stringsToCharPtrs(envStrs);
 
-        environ = envPtrs.data();
-
-        auto argPtrs = stringsToCharPtrs(args);
+        environ = const_cast<char **>(envPtrs.data());
 
         restoreProcessContext();
 
         logger->stop();
 
-        execvp(shell->c_str(), argPtrs.data());
+        execvp(shell->c_str(), const_cast<char * const *>(stringsToCharPtrs(args).data()));
 
         throw SysError("executing shell '%s'", *shell);
     }

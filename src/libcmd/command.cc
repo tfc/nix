@@ -323,7 +323,7 @@ void MixEnvironment::setEnviron() {
         }
 
         vectorEnv = stringsToCharPtrs(stringsEnv);
-        environ = vectorEnv.data();
+        environ = const_cast<char **>(vectorEnv.data());
     } else {
         if (!keep.empty())
             throw UsageError("--keep does not make sense without --ignore-environment");

@@ -317,7 +317,7 @@ struct MixEnvironment : virtual Args {
 
     StringSet keep, unset;
     Strings stringsEnv;
-    std::vector<char*> vectorEnv;
+    std::vector<const char*> vectorEnv;
     bool ignoreEnvironment;
 
     MixEnvironment();
